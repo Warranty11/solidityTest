@@ -1,0 +1,69 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
+
+contract companyStruct {
+    struct Company {
+        string name;
+        uint age;
+        uint workers;
+        string status;
+    }
+    
+    mapping(address => Company) private companies;
+    address public ceo;
+    address public candidate;
+    constructor () {
+        ceo = msg.sender;
+    }
+    
+    modifier onlyOwner {
+        require (ceo == msg.sender);
+        _;
+    }
+    
+    function changeOwner (address _owner) onlyOwner public {
+        candidate = _owner;
+    }
+    
+    function confirmOwner () public {
+        require (candidate == msg.sender);
+        ceo=candidate;
+    }
+    
+    
+    
+    function addCompany (string memory name, uint age, uint workers, string memory status) public {
+        require(age >= 3, "Your company should be older than 3 year");
+        
+        Company memory newCompany;
+        newCompany.name = name;
+        newCompany.age = age;
+        newCompany.workers = workers;
+        if(workers<=10) {
+            newCompany.status="small";
+        } else if(workers>10 && workers <=30) {
+            newCompany.status="medium";
+        } else {
+            newCompany.status="big";
+        }
+        insertCompany(newCompany);
+    }
+    
+    function insertCompany (Company memory newCompany) private {
+        address sender = msg.sender;
+        companies[sender]=newCompany;
+    }
+    
+    function getCompany () public view returns (string memory name, uint age, uint workers, string memory status) {
+        address sender = msg.sender;
+        return (companies[sender].name, companies[sender].age, companies[sender].workers, companies[sender].status);
+    }
+    
+    function deleteCompany (address sender) public {
+        require(msg.sender == ceo);
+        delete companies[sender];
+    }
+    
+    
+    
+}
